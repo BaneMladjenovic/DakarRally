@@ -11,6 +11,5 @@ namespace DakarRally.Repository.Models
         public int NumberOfHeavyMalfunctions { get; set; }
 
         public int VehicleStatisticId { get; set; }
-        public virtual VehicleStatistic VehicleStatistic { get; set; }
     }
 }

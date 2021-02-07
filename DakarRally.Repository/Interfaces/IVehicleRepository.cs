@@ -14,6 +14,7 @@ namespace DakarRally.Repository.Interfaces
         Task PostVehicleAsync(Vehicle vehicle);
         Task PutVehicleAsync(int id, Vehicle vehicle);
         Task DeleteVehicleAsync(int id);
+        Task<IEnumerable<VehicleStatistic>> GetStatisticsAsync(int id);
         Task<IEnumerable<Vehicle>> FindVehiclesAsync(VehicleFilterDTO vehicleFilter);
     }
 }
