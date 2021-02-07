@@ -1,4 +1,4 @@
-﻿using DakarRally.Repository.DAL;
+using DakarRally.Repository.DAL;
 using DakarRally.Repository.Interfaces;
 using DakarRally.Repository.Models;
 using DakarRally.Shared.DTO;
@@ -37,43 +37,46 @@ namespace DakarRally.Repository.Repositories
             using (var context = new ApplicationDBContext())
             {
                 context.Database.EnsureCreated();
-                switch (vehicle.Type)
+                if (context.Race.Where(x => x.Id == vehicle.RaceId).FirstOrDefault().Status == RaceStatus.Pending.ToString())
                 {
-                    case nameof(VehicleType.Car):
-                        switch (vehicle.SubType)
-                        {
-                            case nameof(CarType.Sport):
-                                vehicle.Speed = 140;
-                                break;
-                            case nameof(CarType.Terrain):
-                                vehicle.Speed = 100;
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case nameof(VehicleType.Motorcycle):
-                        switch (vehicle.SubType)
-                        {
-                            case nameof(MotorcycleType.Cross):
-                                vehicle.Speed = 85;
-                                break;
-                            case nameof(MotorcycleType.Sport):
-                                vehicle.Speed = 130;
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case nameof(VehicleType.Truck):
-                        vehicle.Speed = 80;
-                        break;
-                    default:
-                        break;
-                }
+                    switch (vehicle.Type)
+                    {
+                        case nameof(VehicleType.Car):
+                            switch (vehicle.SubType)
+                            {
+                                case nameof(CarType.Sport):
+                                    vehicle.Speed = 140;
+                                    break;
+                                case nameof(CarType.Terrain):
+                                    vehicle.Speed = 100;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case nameof(VehicleType.Motorcycle):
+                            switch (vehicle.SubType)
+                            {
+                                case nameof(MotorcycleType.Cross):
+                                    vehicle.Speed = 85;
+                                    break;
+                                case nameof(MotorcycleType.Sport):
+                                    vehicle.Speed = 130;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case nameof(VehicleType.Truck):
+                            vehicle.Speed = 80;
+                            break;
+                        default:
+                            break;
+                    }
 
-                await context.Vehicle.AddAsync(vehicle);
-                await context.SaveChangesAsync();
+                    await context.Vehicle.AddAsync(vehicle);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
