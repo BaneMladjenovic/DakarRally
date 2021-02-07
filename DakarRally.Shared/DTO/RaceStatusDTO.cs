@@ -7,7 +7,7 @@ namespace DakarRally.Shared.DTO
     public class RaceStatusDTO
     {
         public string Status { get; set; }
-        public List<int> VehiclesGroupeByStatus { get; set; }
-        public List<int> VehiclesGroupeByVehicleType { get; set; }
+        public List<string> VehiclesGroupeByStatus { get; set; }
+        public List<string> VehiclesGroupeByVehicleType { get; set; }
     }
 }

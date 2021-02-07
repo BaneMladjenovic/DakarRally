@@ -77,24 +77,24 @@ namespace DakarRally.Repository.Repositories
             using (var context = new ApplicationDBContext())
             {
                 context.Database.EnsureCreated();
-                var data = await context.Race.Where(x => x.Id == id).Include(race => race.Vehicles).FirstOrDefaultAsync();
-                data.Status = RaceStatus.Running.ToString();
-                await context.SaveChangesAsync();
-
-                List<Thread> threads = new List<Thread>();
-                foreach (var vehicle in data.Vehicles)
+                if (!context.Race.Where(x => x.Id == id).Any(x => x.Status == RaceStatus.Running.ToString()))
                 {
-                    Thread participant = new Thread(StartRace);
-                    threads.Add(participant);
-                    participant.Start(vehicle);
-                    participant.Join();
+                    var data = await context.Race.Where(x => x.Id == id).Include(race => race.Vehicles).FirstOrDefaultAsync();
+                    data.Status = RaceStatus.Running.ToString();
+                    await context.SaveChangesAsync();
 
-                    //Task participant = Task.Factory.StartNew(() => StartRace(vehicle));
-                    //tasks.Add(participant);
+                    List<Thread> threads = new List<Thread>();
+                    foreach (var vehicle in data.Vehicles)
+                    {
+                        Thread participant = new Thread(StartRace);
+                        threads.Add(participant);
+                        participant.Start(vehicle);
+                        participant.Join();
+                    }
+
+                    data.Status = RaceStatus.Finished.ToString();
+                    await context.SaveChangesAsync();
                 }
-
-                data.Status = RaceStatus.Finished.ToString();
-                await context.SaveChangesAsync();
             }
         }
 
@@ -104,12 +104,22 @@ namespace DakarRally.Repository.Repositories
             {
                 context.Database.EnsureCreated();
                 var race = await context.Race.Where(x => x.Id == id).Include(race => race.Vehicles).FirstOrDefaultAsync();
-                return new RaceStatusDTO()
+                var statusCount =  await context.VehicleStatistic.Where(x => race.Vehicles.Select(z => z.Id).Contains(x.VehicleId)).GroupBy(y => y.Status).Select(z => new { Status = z.Key, Count = z.Count() }).ToListAsync();
+                var typeCount = race.Vehicles.GroupBy(x => x.Type).Select(z => new { Type = z.Key, Count = z.Count() }).ToList();
+
+                var raceStatus = new RaceStatusDTO() { Status = race.Status, VehiclesGroupeByStatus = new List<string>(), VehiclesGroupeByVehicleType = new List<string>() };
+
+                foreach (var item in statusCount)
                 {
-                    Status = race.Status,
-                    VehiclesGroupeByStatus = await context.VehicleStatistic.Where(x => race.Vehicles.Select(z => z.Id).Contains(x.VehicleId)).GroupBy(y => y.Status).Select(z => z.Count()).ToListAsync(),
-                    VehiclesGroupeByVehicleType = race.Vehicles.GroupBy(x => x.Type).Select(z => z.Count()).ToList()
-                };
+                    raceStatus.VehiclesGroupeByStatus.Add($"{item.Status}: {item.Count}");
+                }
+
+                foreach (var item in typeCount)
+                {
+                    raceStatus.VehiclesGroupeByVehicleType.Add($"{item.Type}: {item.Count}");
+                }
+
+                return raceStatus;
             }
         }
 
@@ -124,7 +134,7 @@ namespace DakarRally.Repository.Repositories
                 {
                     Distance = 0,
                     Status = "Active",
-                    FinishTime = DateTime.UtcNow,
+                    FinishTimeInHours = 0,
                     VehicleId = (vehicle as Vehicle).Id
                 };
 
@@ -151,7 +161,7 @@ namespace DakarRally.Repository.Repositories
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
                                             vehicleStatistic.Status = "Inactive";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
+                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -175,7 +185,7 @@ namespace DakarRally.Repository.Repositories
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
                                             vehicleStatistic.Status = "Inactive";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
+                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -206,7 +216,7 @@ namespace DakarRally.Repository.Repositories
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
                                             vehicleStatistic.Status = "Inactive";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
+                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -230,7 +240,7 @@ namespace DakarRally.Repository.Repositories
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
                                             vehicleStatistic.Status = "Inactive";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
+                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -258,7 +268,7 @@ namespace DakarRally.Repository.Repositories
                                     malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
                                     vehicleStatistic.Status = "Inactive";
                                     vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                    vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
+                                    //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                     context.VehicleStatistic.Add(vehicleStatistic);
                                     context.SaveChanges();
@@ -284,7 +294,7 @@ namespace DakarRally.Repository.Repositories
                 }
 
                 vehicleStatistic.Distance = 10000;
-                vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds((double)estimatedSeconds);
+                vehicleStatistic.FinishTimeInHours = (int)estimatedSeconds / 3600;
 
                 context.VehicleStatistic.Add(vehicleStatistic);
                 context.SaveChanges();
