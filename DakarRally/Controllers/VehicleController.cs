@@ -62,6 +62,13 @@ namespace DakarRally.Controllers
             return Ok("Vehicle deleted successfully!");
         }
 
+        [HttpGet("{id}/statistics")]
+        public async Task<IActionResult> GetStatistics(int id)
+        {
+            var result = await this.vehicleRepository.GetStatisticsAsync(id);
+            return Ok(result);
+        }
+
         // POST: api/Vehicle/find
         [HttpPost("find")]
         public async Task<IActionResult> FindVehicles(VehicleFilterDTO vehicleFilter)

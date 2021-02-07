@@ -107,6 +107,15 @@ namespace DakarRally.Repository.Repositories
             }
         }
 
+        public async Task<IEnumerable<VehicleStatistic>> GetStatisticsAsync(int id)
+        {
+            using (var context = new ApplicationDBContext())
+            {
+                context.Database.EnsureCreated();
+                return await context.VehicleStatistic.Include(x => x.MalfunctionStatistic).Where(x => x.VehicleId == id).ToListAsync();
+            }
+        }
+
         public async Task<IEnumerable<Vehicle>> FindVehiclesAsync(VehicleFilterDTO vehicleFilter)
         {
             using (var context = new ApplicationDBContext())
