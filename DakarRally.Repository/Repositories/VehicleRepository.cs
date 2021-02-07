@@ -1,4 +1,4 @@
-using DakarRally.Repository.DAL;
+﻿using DakarRally.Repository.DAL;
 using DakarRally.Repository.Interfaces;
 using DakarRally.Repository.Models;
 using DakarRally.Shared.DTO;
@@ -104,9 +104,12 @@ namespace DakarRally.Repository.Repositories
                 context.Database.EnsureCreated();
                 var data = await context.Vehicle.Where(x => x.Id == id).FirstOrDefaultAsync();
 
-                context.Vehicle.Remove(data);
+                if (context.Race.Where(x => x.Id == data.RaceId).FirstOrDefault().Status == RaceStatus.Pending.ToString())
+                {
+                    context.Vehicle.Remove(data);
 
-                await context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
