@@ -62,6 +62,20 @@ namespace DakarRally.Controllers
             return Ok("Vehicle deleted successfully!");
         }
 
+        [HttpGet("leaderboard")]
+        public async Task<IActionResult> GetLeaderboard()
+        {
+            var result = await this.vehicleRepository.GetLeaderboardAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{type}/leaderboard")]
+        public async Task<IActionResult> GetLeaderboardByVehicleType(string type)
+        {
+            var result = await this.vehicleRepository.GetLeaderboardByVehicleTypeAsync(type);
+            return Ok(result);
+        }
+
         [HttpGet("{id}/statistics")]
         public async Task<IActionResult> GetStatistics(int id)
         {

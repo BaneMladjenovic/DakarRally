@@ -113,6 +113,31 @@ namespace DakarRally.Repository.Repositories
             }
         }
 
+        public async Task<IEnumerable<VehicleStatistic>> GetLeaderboardAsync()
+        {
+            using (var context = new ApplicationDBContext())
+            {
+                context.Database.EnsureCreated();
+                return await context.VehicleStatistic.Include(x => x.Vehicle)
+                    .OrderByDescending(x => x.Distance)
+                    .ThenBy(x => x.FinishTimeInHours)
+                    .ToListAsync();
+            }
+        }
+
+        public async Task<IEnumerable<VehicleStatistic>> GetLeaderboardByVehicleTypeAsync(string type)
+        {
+            using (var context = new ApplicationDBContext())
+            {
+                context.Database.EnsureCreated();
+                return await context.VehicleStatistic.Include(x => x.Vehicle)
+                    .Where(x => x.Vehicle.Type.ToLower() == type.ToLower())
+                    .OrderByDescending(x => x.Distance)
+                    .ThenBy(x => x.FinishTimeInHours)
+                    .ToListAsync();
+            }
+        }
+
         public async Task<IEnumerable<VehicleStatistic>> GetStatisticsAsync(int id)
         {
             using (var context = new ApplicationDBContext())
@@ -127,42 +152,48 @@ namespace DakarRally.Repository.Repositories
             using (var context = new ApplicationDBContext())
             {
                 context.Database.EnsureCreated();
-                var vehicles = context.Vehicle.AsNoTracking();
+                var vehicles = new List<Vehicle>();
+                var statistics = context.VehicleStatistic.Include(x => x.Vehicle).AsNoTracking();
 
                 if (!string.IsNullOrEmpty(vehicleFilter.TeamName))
                 {
-                    vehicles = vehicles.Where(x => x.TeamName == vehicleFilter.TeamName);
+                    statistics = statistics.Where(x => x.Vehicle.TeamName == vehicleFilter.TeamName);
                 }
 
                 if (!string.IsNullOrEmpty(vehicleFilter.VehicleModel))
                 {
-                    vehicles = vehicles.Where(x => x.VehicleModel == vehicleFilter.VehicleModel);
+                    statistics = statistics.Where(x => x.Vehicle.VehicleModel == vehicleFilter.VehicleModel);
                 }
 
                 if (vehicleFilter.ManufacturingDate.HasValue)
                 {
-                    vehicles = vehicles.Where(x => x.ManufacturingDate == vehicleFilter.ManufacturingDate.Value);
+                    statistics = statistics.Where(x => x.Vehicle.ManufacturingDate == vehicleFilter.ManufacturingDate.Value);
                 }
 
                 if (!string.IsNullOrEmpty(vehicleFilter.Status))
                 {
-                    //Status???
+                    statistics = statistics.Where(x => x.Status == vehicleFilter.Status);
+                }
+
+                foreach (var item in await statistics.ToListAsync())
+                {
+                    vehicles.Add(item.Vehicle);
                 }
 
                 if (vehicleFilter.SortOrder.HasValue && vehicleFilter.SortOrder == (int)SortOrder.ASC)
                 {
-                    vehicles = vehicles.OrderBy(x => x.Id);
+                    vehicles = vehicles.OrderBy(x => x.Id).ToList();
                 }
                 else if (vehicleFilter.SortOrder.HasValue && vehicleFilter.SortOrder == (int)SortOrder.DESC)
                 {
-                    vehicles = vehicles.OrderByDescending(x => x.Id);
+                    vehicles = vehicles.OrderByDescending(x => x.Id).ToList();
                 }
                 else
                 {
-                    vehicles = vehicles.OrderBy(x => x.Id);
+                    vehicles = vehicles.OrderBy(x => x.Id).ToList();
                 }
 
-                return await vehicles.ToListAsync();
+                return vehicles;
             }
         }
     }
