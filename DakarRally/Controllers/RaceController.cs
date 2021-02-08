@@ -20,7 +20,7 @@ namespace DakarRally.Controllers
             raceRepository = _raceRepository;
         }
 
-        // GET: api/Race
+
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -28,15 +28,20 @@ namespace DakarRally.Controllers
             return Ok(result);
         }
 
-        // GET: api/Race/5
+
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
             var result = await this.raceRepository.GetRaceByIdAsync(id);
+            if (result == null)
+            {
+                return NotFound("Race not found");
+            }
+
             return Ok(result);
         }
 
-        // POST: api/Race
+        // Task Requirement 1)
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] int year)
         {
@@ -44,7 +49,7 @@ namespace DakarRally.Controllers
             return Ok("Race created successfully!");
         }
 
-        // PUT: api/Race/5
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Race race)
         {
@@ -52,7 +57,7 @@ namespace DakarRally.Controllers
             return Ok("Race updated successfully!");
         }
 
-        // DELETE: api/Race/5
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -60,14 +65,19 @@ namespace DakarRally.Controllers
             return Ok("Race deleted successfully!");
         }
 
-        // PUT: Race/5/start
+        // Task Requirement 5)
         [HttpPut("{id}/start")]
         public async Task<IActionResult> StartRace(int id)
         {
-            await this.raceRepository.StartRaceAsync(id);
+            var result =  await this.raceRepository.StartRaceAsync(id);
+            if (result == false)
+            {
+                return NotFound("Couldn't start the Race because it there exist another one in status Running or the current one has finished.");
+            }
             return Ok("Race started successfully!");
         }
 
+        // Task Requirement 10)
         [HttpGet("{id}/status")]
         public async Task<IActionResult> RaceStatus(int id)
         {

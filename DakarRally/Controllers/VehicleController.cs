@@ -22,7 +22,7 @@ namespace DakarRally.Controllers
             vehicleRepository = _vehicleRepository;
         }
 
-        // GET: api/Vehicle
+        
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -30,38 +30,55 @@ namespace DakarRally.Controllers
             return Ok(result);
         }
 
-        // GET: api/Vehicle/5
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
             var result = await this.vehicleRepository.GetVehicleByIdAsync(id);
+            if (result == null)
+            {
+                return NotFound("Vehicle not found.");
+            }
             return Ok(result);
         }
 
-        // POST: api/Vehicle
+        // Task Requirement 2)
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Vehicle vehicle)
         {
-            await this.vehicleRepository.PostVehicleAsync(vehicle);
+            var result = await this.vehicleRepository.PostVehicleAsync(vehicle);
+            if (result == null)
+            {
+                return NotFound("Couldn't add vehicle to Race because it is not in status pending.");
+            }
             return Ok("Vehicle created successfully!");
         }
 
-        // PUT: api/Vehicle/5
+        // Task Requirement 3)
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Vehicle vehicle)
         {
-            await this.vehicleRepository.PutVehicleAsync(id, vehicle);
+            var result = await this.vehicleRepository.PutVehicleAsync(id, vehicle);
+            if (result == null)
+            {
+                return NotFound("Couldn't update vehicle because the Race it belongs to is not in status pending.");
+            }
             return Ok("Vehicle updated successfully!");
         }
 
-        // DELETE: api/Vehicle/5
+        // Task Requirement 4)
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await this.vehicleRepository.DeleteVehicleAsync(id);
+            var result = await this.vehicleRepository.DeleteVehicleAsync(id);
+            if (result == false)
+            {
+                return NotFound("Couldn't remove vehicle from the Race because it is not in status pending.");
+            }
             return Ok("Vehicle deleted successfully!");
         }
 
+        // Task Requirement 6)
         [HttpGet("leaderboard")]
         public async Task<IActionResult> GetLeaderboard()
         {
@@ -69,6 +86,7 @@ namespace DakarRally.Controllers
             return Ok(result);
         }
 
+        // Task Requirement 7)
         [HttpGet("{type}/leaderboard")]
         public async Task<IActionResult> GetLeaderboardByVehicleType(string type)
         {
@@ -76,6 +94,7 @@ namespace DakarRally.Controllers
             return Ok(result);
         }
 
+        // Task Requirement 8)
         [HttpGet("{id}/statistics")]
         public async Task<IActionResult> GetStatistics(int id)
         {
@@ -83,28 +102,12 @@ namespace DakarRally.Controllers
             return Ok(result);
         }
 
-        // POST: api/Vehicle/find
+        // Task Requirement 9)
         [HttpPost("find")]
         public async Task<IActionResult> FindVehicles(VehicleFilterDTO vehicleFilter)
         {
             var result = await this.vehicleRepository.FindVehiclesAsync(vehicleFilter);
             return Ok(result);
         }
-
-        //// GET: api/Vehicle/leaderboard
-        //[HttpGet("leaderboard")]
-        //public async Task<IActionResult> GetLeaderBoard()
-        //{
-        //    var result = await this.vehicleRepository.GetLeaderBoardAsync();
-        //    return Ok(result);
-        //}
-
-        //// GET: api/Vehicle/type/leaderboard
-        //[HttpGet("{type}/leaderboard")]
-        //public async Task<IActionResult> GetLeaderBoardByType(string type)
-        //{
-        //    var result = await this.vehicleRepository.GetLeaderBoardByTypeAsync(type);
-        //    return Ok(result);
-        //}
     }
 }

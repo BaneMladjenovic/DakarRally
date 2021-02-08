@@ -72,12 +72,12 @@ namespace DakarRally.Repository.Repositories
             }
         }
 
-        public async Task StartRaceAsync(int id)
+        public async Task<bool> StartRaceAsync(int id)
         {
             using (var context = new ApplicationDBContext())
             {
                 context.Database.EnsureCreated();
-                if (!context.Race.Where(x => x.Id == id).Any(x => x.Status == RaceStatus.Running.ToString()))
+                if (!context.Race.Any(x => x.Status == RaceStatus.Running.ToString()) && context.Race.Where(x => x.Id == id).FirstOrDefault().Status != RaceStatus.Finished.ToString())
                 {
                     var data = await context.Race.Where(x => x.Id == id).Include(race => race.Vehicles).FirstOrDefaultAsync();
                     data.Status = RaceStatus.Running.ToString();
@@ -94,6 +94,12 @@ namespace DakarRally.Repository.Repositories
 
                     data.Status = RaceStatus.Finished.ToString();
                     await context.SaveChangesAsync();
+
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
         }
@@ -133,7 +139,7 @@ namespace DakarRally.Repository.Repositories
                 VehicleStatistic vehicleStatistic = new VehicleStatistic()
                 {
                     Distance = 0,
-                    Status = "Active",
+                    Status = "Operational",
                     FinishTimeInHours = 0,
                     VehicleId = (vehicle as Vehicle).Id
                 };
@@ -145,11 +151,14 @@ namespace DakarRally.Repository.Repositories
                     NumberOfHeavyMalfunctions = 0
                 };
 
+                //more vehicles finish the race but lesser chances for malfunction occurence
+                var check = rnd.Next(0, 101);
                 for (int i = 1; i < estimatedSeconds; i++)
                 {
                     if (i % 3600 == 0)
                     {
-                        var check = rnd.Next(101);
+                        //more malfunction occurences but less vehicles that finish the race
+                        //var check = rnd.Next(0, 101);
                         switch ((vehicle as Vehicle).Type)
                         {
                             case nameof(VehicleType.Car):
@@ -159,9 +168,8 @@ namespace DakarRally.Repository.Repositories
                                         if (check <= 2)
                                         {
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
-                                            vehicleStatistic.Status = "Inactive";
+                                            vehicleStatistic.Status = "Malfunctioned";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -183,9 +191,8 @@ namespace DakarRally.Repository.Repositories
                                         if (check <= 1)
                                         {
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
-                                            vehicleStatistic.Status = "Inactive";
+                                            vehicleStatistic.Status = "Malfunctioned";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -214,9 +221,8 @@ namespace DakarRally.Repository.Repositories
                                         if (check <= 2)
                                         {
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
-                                            vehicleStatistic.Status = "Inactive";
+                                            vehicleStatistic.Status = "Malfunctioned";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -238,9 +244,8 @@ namespace DakarRally.Repository.Repositories
                                         if (check <= 10)
                                         {
                                             malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
-                                            vehicleStatistic.Status = "Inactive";
+                                            vehicleStatistic.Status = "Malfunctioned";
                                             vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                            //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                             context.VehicleStatistic.Add(vehicleStatistic);
                                             context.SaveChanges();
@@ -266,9 +271,8 @@ namespace DakarRally.Repository.Repositories
                                 if (check <= 4)
                                 {
                                     malfunctionStatistic.NumberOfHeavyMalfunctions += 1;
-                                    vehicleStatistic.Status = "Inactive";
+                                    vehicleStatistic.Status = "Malfunctioned";
                                     vehicleStatistic.Distance = i / 3600 * (vehicle as Vehicle).Speed;
-                                    //vehicleStatistic.FinishTime = vehicleStatistic.FinishTime.AddSeconds(i);
 
                                     context.VehicleStatistic.Add(vehicleStatistic);
                                     context.SaveChanges();
