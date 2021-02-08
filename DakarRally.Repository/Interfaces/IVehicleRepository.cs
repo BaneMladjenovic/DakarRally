@@ -11,9 +11,9 @@ namespace DakarRally.Repository.Interfaces
     {
         Task<IEnumerable<Vehicle>> GetVehiclesAsync();
         Task<Vehicle> GetVehicleByIdAsync(int id);
-        Task PostVehicleAsync(Vehicle vehicle);
-        Task PutVehicleAsync(int id, Vehicle vehicle);
-        Task DeleteVehicleAsync(int id);
+        Task<Vehicle> PostVehicleAsync(Vehicle vehicle);
+        Task<Vehicle> PutVehicleAsync(int id, Vehicle vehicle);
+        Task<bool> DeleteVehicleAsync(int id);
         Task<IEnumerable<VehicleStatistic>> GetLeaderboardAsync();
         Task<IEnumerable<VehicleStatistic>> GetLeaderboardByVehicleTypeAsync(string type);
         Task<IEnumerable<VehicleStatistic>> GetStatisticsAsync(int id);

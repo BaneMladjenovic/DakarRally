@@ -32,7 +32,7 @@ namespace DakarRally.Repository.Repositories
             }
         }
 
-        public async Task PostVehicleAsync(Vehicle vehicle)
+        public async Task<Vehicle> PostVehicleAsync(Vehicle vehicle)
         {
             using (var context = new ApplicationDBContext())
             {
@@ -76,28 +76,43 @@ namespace DakarRally.Repository.Repositories
 
                     await context.Vehicle.AddAsync(vehicle);
                     await context.SaveChangesAsync();
+
+                    return vehicle;
+                }
+                else
+                {
+                    return null;
                 }
             }
         }
 
-        public async Task PutVehicleAsync(int id, Vehicle vehicle)
+        public async Task<Vehicle> PutVehicleAsync(int id, Vehicle vehicle)
         {
             using (var context = new ApplicationDBContext())
             {
                 context.Database.EnsureCreated();
-                var data = await context.Vehicle.Where(x => x.Id == id).FirstOrDefaultAsync();
-                data.TeamName = vehicle.TeamName;
-                data.ManufacturingDate = vehicle.ManufacturingDate;
-                data.VehicleModel = vehicle.VehicleModel;
-                data.Speed = vehicle.Speed;
-                data.Type = vehicle.Type;
-                data.SubType = vehicle.SubType;
+                if (context.Race.Where(x => x.Id == vehicle.RaceId).FirstOrDefault().Status == RaceStatus.Pending.ToString())
+                {
+                    var data = await context.Vehicle.Where(x => x.Id == id).FirstOrDefaultAsync();
+                    data.TeamName = vehicle.TeamName;
+                    data.ManufacturingDate = vehicle.ManufacturingDate;
+                    data.VehicleModel = vehicle.VehicleModel;
+                    data.Speed = vehicle.Speed;
+                    data.Type = vehicle.Type;
+                    data.SubType = vehicle.SubType;
 
-                await context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
+
+                    return vehicle;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
-        public async Task DeleteVehicleAsync(int id)
+        public async Task<bool> DeleteVehicleAsync(int id)
         {
             using (var context = new ApplicationDBContext())
             {
@@ -109,6 +124,12 @@ namespace DakarRally.Repository.Repositories
                     context.Vehicle.Remove(data);
 
                     await context.SaveChangesAsync();
+
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
         }

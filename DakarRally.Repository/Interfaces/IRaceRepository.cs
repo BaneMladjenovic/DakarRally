@@ -14,7 +14,7 @@ namespace DakarRally.Repository.Interfaces
         Task PostRaceAsync(int year);
         Task PutRaceAsync(int id, Race race);
         Task DeleteRaceAsync(int id);
-        Task StartRaceAsync(int id);
+        Task<bool> StartRaceAsync(int id);
         Task<RaceStatusDTO> GetRaceStatusAsync(int id);
     }
 }
